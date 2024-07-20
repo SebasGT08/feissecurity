@@ -54,7 +54,11 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "allowedCommonJsDependencies": [
+                "@tensorflow/tfjs-core",
+                "face-api.js"
+              ]
             },
             "development": {
               "buildOptimizer": false,
@@ -62,7 +66,11 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "allowedCommonJsDependencies": [
+                "@tensorflow/tfjs-core",
+                "face-api.js"
+              ]
             },
             "ci": {
               "progress": false
@@ -136,7 +144,8 @@
   "cli": {
     "schematicCollections": [
       "@ionic/angular-toolkit"
-    ]
+    ],
+    "analytics": false
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {

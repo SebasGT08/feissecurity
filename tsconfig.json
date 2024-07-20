@@ -1,4 +1,3 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -16,18 +15,24 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2022",
-    "module": "es2020",
+    "target": "es2020", // Cambiado de es2022 para mayor compatibilidad con bibliotecas más antiguas
+    "module": "es2020", // Puede mantenerse como es2020 para compatibilidad con módulos ES modernos
     "lib": [
       "es2018", 
-      "dom"
+      "dom",
+      "dom.iterable" // Asegurando la compatibilidad completa con el DOM y sus iterables
     ],
-    "useDefineForClassFields": false
+    "allowSyntheticDefaultImports": true, // Permitir importaciones predeterminadas sintéticas para módulos sin exportación predeterminada
+    "esModuleInterop": true, // Habilita la interoperabilidad de módulo ES para exportaciones CommonJS/AMD
+    "skipLibCheck": true, // Omitir la verificación de tipo en archivos de declaración para mejorar los tiempos de compilación
+    "useDefineForClassFields": true // Actualizar a true para alinearse con el comportamiento estándar de JavaScript
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
+    "fullTemplateTypeCheck": true, // Garantiza que las expresiones en plantillas sean verificadas completamente
+    "strictOutputEventTypes": true // Asegura tipos estrictos en los eventos de salida
   }
 }
