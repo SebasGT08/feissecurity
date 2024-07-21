@@ -1,7 +1,47 @@
+/* Añadir esto en el archivo tab1.page.scss */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 120px); /* Ajustar este valor según la altura del header y del botón */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  overflow: hidden;
+}
+
 video, canvas {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.validate-button {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  z-index: 10;
+}
+
+.timer {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 1.5em;
+  font-weight: bold;
+  z-index: 10;
+  text-align: center;
 }

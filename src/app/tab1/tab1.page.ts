@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import * as faceapi from 'face-api.js';
@@ -11,12 +11,18 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss']
 })
-export class Tab1Page implements OnInit, AfterViewInit {
+export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('video', { static: true }) video!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
   private faceMatcher!: faceapi.FaceMatcher;
   isBrowser: boolean;
+  private detectionInterval: any;
+  private validationInterval: any;
+  isValidating = false;
+  validationTime = 5;
+  private currentFaceId: string | null = null;
+  private validFaceCount = 0;
 
   constructor(
     private embeddingsService: EmbeddingsService,
@@ -50,7 +56,7 @@ export class Tab1Page implements OnInit, AfterViewInit {
   }
 
   startVideo() {
-    navigator.mediaDevices.getUserMedia({ video: {} })
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
       .then(stream => {
         this.video.nativeElement.srcObject = stream;
         this.video.nativeElement.onloadedmetadata = () => {
@@ -86,7 +92,7 @@ export class Tab1Page implements OnInit, AfterViewInit {
     const displaySize = { width: videoElement.videoWidth, height: videoElement.videoHeight };
     faceapi.matchDimensions(canvasElement, displaySize);
 
-    setInterval(async () => {
+    this.detectionInterval = setInterval(async () => {
       const detections = await faceapi.detectAllFaces(videoElement, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
         .withFaceDescriptors();
@@ -106,6 +112,49 @@ export class Tab1Page implements OnInit, AfterViewInit {
           drawBox.draw(canvasElement);
         });
       }
-    }, 100);
+
+      if (results.length > 0 && results[0].label !== 'unknown') {
+        const detectedFaceId = results[0].label;
+        if (this.currentFaceId === detectedFaceId) {
+          this.validFaceCount++;
+        } else {
+          this.currentFaceId = detectedFaceId;
+          this.validFaceCount = 1;
+        }
+      } else {
+        this.validFaceCount = 0;
+      }
+    }, 500);
+  }
+
+  validateDetection() {
+    this.isValidating = true;
+    this.validationTime = 5;
+    this.validFaceCount = 0;
+    this.currentFaceId = null;
+
+    this.validationInterval = setInterval(() => {
+      this.validationTime--;
+      if (this.validationTime <= 0) {
+        clearInterval(this.validationInterval);
+        this.isValidating = false;
+        if (this.validFaceCount >= 10) { // 10 frames in 5 seconds
+          this.sendEntry();
+        } else {
+          console.log('Detección no válida');
+        }
+      }
+    }, 1000);
+  }
+
+  sendEntry() {
+    const entryTime = new Date().toISOString();
+    console.log('Registro enviado:', { person: 'Persona detectada', time: entryTime });
+    alert('Registro enviado: ' + entryTime);
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.detectionInterval);
+    clearInterval(this.validationInterval);
   }
 }
