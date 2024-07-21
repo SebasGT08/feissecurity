@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { PLATFORM_ID, Inject} from '@angular/core';
-import { isPlatformBrowser} from '@angular/common';
+import { PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import * as faceapi from 'face-api.js';
 import { EmbeddingsService } from '../services/embeddings.service';
-
-
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 @Component({
   selector: 'app-tab1',
@@ -21,25 +21,31 @@ export class Tab1Page implements OnInit, AfterViewInit {
   constructor(
     private embeddingsService: EmbeddingsService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) { 
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   async ngOnInit() {
-    if (this.isBrowser) {
-      await faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models/tiny_face_detector');
-      await faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models/face_landmark_68');
-      await faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models/face_recognition');
-      await faceapi.nets.tinyYolov2.loadFromUri('/assets/models/tiny_yolov2');
-
-      await this.embeddingsService.loadEmbeddings();
-      this.faceMatcher = new faceapi.FaceMatcher(this.embeddingsService.getEmbeddings(), 0.6);
-    }
+    await this.loadModels();
+    await this.embeddingsService.loadEmbeddings();
+    this.faceMatcher = new faceapi.FaceMatcher(this.embeddingsService.getEmbeddings(), 0.6);
   }
 
   async ngAfterViewInit() {
     if (this.isBrowser) {
       this.startVideo();
+    } else if (Capacitor.isNativePlatform()) {
+      await this.captureVideo();
+    }
+  }
+
+  async loadModels() {
+    try {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('/assets/tiny_face_detector_model-weights_manifest.json');
+      await faceapi.nets.faceLandmark68Net.loadFromUri('/assets/face_landmark_68_model-weights_manifest.json');
+      await faceapi.nets.faceRecognitionNet.loadFromUri('/assets/face_recognition_model-weights_manifest.json');
+    } catch (error) {
+      console.error('Error al cargar los modelos: ', error);
     }
   }
 
@@ -55,6 +61,24 @@ export class Tab1Page implements OnInit, AfterViewInit {
       .catch(err => console.error('Error accessing camera: ', err));
   }
 
+  async captureVideo() {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: CameraSource.Camera
+    });
+
+    const videoElement = this.video.nativeElement;
+    const filePath = Capacitor.convertFileSrc(image.path!);
+
+    videoElement.src = filePath;
+    videoElement.onloadedmetadata = () => {
+      videoElement.play();
+      this.detectFaces();
+    };
+  }
+
   async detectFaces() {
     const videoElement = this.video.nativeElement;
     const canvasElement = this.canvas.nativeElement;
@@ -68,9 +92,7 @@ export class Tab1Page implements OnInit, AfterViewInit {
         .withFaceDescriptors();
 
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
-      const results = resizedDetections.map(d => {
-        return this.faceMatcher.findBestMatch(d.descriptor);
-      });
+      const results = resizedDetections.map(d => this.faceMatcher.findBestMatch(d.descriptor));
 
       const context = canvasElement.getContext('2d');
       if (context) {

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">feissecurity</string>
+    <string name="title_activity_main">feissecurity</string>
+    <string name="package_name">io.ionic.feis</string>
+    <string name="custom_url_scheme">io.ionic.feis</string>
+</resources>
