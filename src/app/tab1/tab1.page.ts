@@ -5,6 +5,8 @@ import * as faceapi from 'face-api.js';
 import { EmbeddingsService } from '../services/embeddings.service';
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { EnvioFireService } from '../services/envio-fire.service';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -26,6 +28,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private embeddingsService: EmbeddingsService,
+    private envioFireService: EnvioFireService,
+    private toastController: ToastController, 
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -141,6 +145,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         if (this.validFaceCount >= 10) { // 10 frames in 5 seconds
           this.sendEntry();
         } else {
+          this.showToast('No paso la validacion, Intente nuevamente ', 'danger');
           console.log('Detección no válida');
         }
       }
@@ -149,12 +154,24 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   sendEntry() {
     const entryTime = new Date().toISOString();
-    console.log('Registro enviado:', { person: 'Persona detectada', time: entryTime });
-    alert('Registro enviado: ' + entryTime);
+    const detectedPerson = this.currentFaceId || 'Unknown';
+
+    this.envioFireService.registerPerson(detectedPerson);
+    console.log('Registro enviado:', { person: detectedPerson, time: entryTime });
   }
 
   ngOnDestroy() {
     clearInterval(this.detectionInterval);
     clearInterval(this.validationInterval);
+  }
+
+  async showToast(message: string, color = 'success') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'top',
+      color: color
+    });
+    await toast.present();
   }
 }
