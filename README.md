@@ -22,8 +22,8 @@ Este proyecto consiste en una aplicación IONIC que utiliza Angular, Firebase y 
 
 1. **Clonar el repositorio**:
    ```sh
-   git clone https://github.com/tu-usuario/tu-repositorio.git
-   cd tu-repositorio
+   git clone https://github.com/SebasGT08/feissecurity.git
+   cd feissecurity
    ```
 
 2. **Instalar dependencias**:
