@@ -25,10 +25,10 @@ export class EnvioFireService {
 
   async invalidRegister() {
     const timestamp = new Date();
-    const text = 'Incorrecto';
+    const person = 'Incorrecto';
     try {
       await this.firestore.collection('registrations').add({
-        text,
+        person,
         timestamp
       });
       this.showToast('No paso la validacion, Intente nuevamente ', 'danger');

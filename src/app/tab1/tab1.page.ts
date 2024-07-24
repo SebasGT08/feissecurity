@@ -141,7 +141,6 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
       this.validationTime--;
       if (this.validationTime <= 0) {
         clearInterval(this.validationInterval);
-        this.isValidating = false;
         if (this.validFaceCount >= 10) { // 10 frames in 5 seconds
           this.sendEntry();
         } else {
@@ -149,6 +148,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
           // console.log('Detección no válida');
           this.envioFireService.invalidRegister();
         }
+        this.isValidating = false;
+
       }
     }, 1000);
   }
