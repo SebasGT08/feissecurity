@@ -145,8 +145,9 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         if (this.validFaceCount >= 10) { // 10 frames in 5 seconds
           this.sendEntry();
         } else {
-          this.showToast('No paso la validacion, Intente nuevamente ', 'danger');
-          console.log('Detección no válida');
+          // this.showToast('No paso la validacion, Intente nuevamente ', 'danger');
+          // console.log('Detección no válida');
+          this.envioFireService.invalidRegister();
         }
       }
     }, 1000);

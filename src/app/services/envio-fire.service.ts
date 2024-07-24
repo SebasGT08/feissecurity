@@ -23,6 +23,20 @@ export class EnvioFireService {
     }
   }
 
+  async invalidRegister() {
+    const timestamp = new Date();
+    const text = 'Incorrecto';
+    try {
+      await this.firestore.collection('registrations').add({
+        text,
+        timestamp
+      });
+      this.showToast('No paso la validacion, Intente nuevamente ', 'danger');
+    } catch (error) {
+      this.showToast('Error al enviar al servidor: ' + error, 'danger');
+    }
+  }
+
   async showToast(message: string, color = 'success') {
     const toast = await this.toastController.create({
       message: message,
