@@ -1,9 +1,11 @@
-// webpack.config.js
+const webpack = require('webpack');
+
 module.exports = {
-    resolve: {
-      fallback: {
-        fs: false
-      }
+  resolve: {
+    fallback: {
+      "fs": false,
+      "path": false,
+      "os": false
     }
+  }
 };
-  

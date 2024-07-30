@@ -37,8 +37,18 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   async ngOnInit() {
     await this.loadModels();
-    await this.embeddingsService.loadEmbeddings();
-    this.faceMatcher = new faceapi.FaceMatcher(this.embeddingsService.getEmbeddings(), 0.6);
+    
+    // Obtener el nombre de archivo del almacenamiento local
+    const userFile = localStorage.getItem('userFile') || 'default.json';
+    await this.embeddingsService.loadEmbeddings(userFile);
+    console.log(`Archivo ${userFile} cargado en Tab1Page`);
+
+    const embeddings = this.embeddingsService.getEmbeddings();
+    if (embeddings.length > 0) {
+      this.faceMatcher = new faceapi.FaceMatcher(embeddings, 0.6);
+    } else {
+      console.error('No se encontraron embeddings. Asegúrate de que el archivo JSON contenga los datos correctos.');
+    }
   }
 
   async ngAfterViewInit() {
@@ -102,6 +112,13 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         .withFaceDescriptors();
 
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+      // Verificar que faceMatcher está inicializado
+      if (!this.faceMatcher) {
+        console.error('faceMatcher no está inicializado.');
+        return;
+      }
+
       const results = resizedDetections.map(d => this.faceMatcher.findBestMatch(d.descriptor));
 
       const context = canvasElement.getContext('2d');
@@ -144,12 +161,9 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         if (this.validFaceCount >= 10) { // 10 frames in 5 seconds
           this.sendEntry();
         } else {
-          // this.showToast('No paso la validacion, Intente nuevamente ', 'danger');
-          // console.log('Detección no válida');
           this.envioFireService.invalidRegister();
         }
         this.isValidating = false;
-
       }
     }, 1000);
   }
